@@ -26,7 +26,7 @@
         var signMapping;
 
         L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
+            maxZoom: 19,
             attribution:
                 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
                 '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
@@ -35,7 +35,8 @@
 
         var clusterGroup = L.markerClusterGroup({
             // attribution in geojsonLayer is ignored
-            attribution: signAttribution
+            attribution: signAttribution,
+            disableClusteringAtZoom : 18
         });
         var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.json");
         mymap.addLayer(clusterGroup);
@@ -51,11 +52,20 @@
         });
 
         var popup = L.popup();
+        function fix(s) {
+            var ret = s.match(/(\d+)([a-zöäå]+)/);
+            if (ret) {
+                var value = ret[1] + " " + ret[2];
+                console.log("Fixed %s to %s", s, value)
+                return value;
+            }
+            return s;
+        }
         function onMapClick(e) {
             prop = e.layer.feature.properties;
             console.log(prop);
             popup.setLatLng(e.latlng)
-                .setContent(signMapping[prop["signtype"]])
+                .setContent(signMapping[fix(prop["signtype"])])
                 .openOn(mymap);
         }
         geojsonLayer.on("click", onMapClick)
