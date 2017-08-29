@@ -25,6 +25,12 @@
         var mymap = L.map('mapid').setView([60.440963, 22.25122], 10);
         var signMapping;
 
+        var radius = function(zoom) {
+            if (zoom >= 18)
+                return 5;
+            return 80;
+        };
+
         L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution:
@@ -36,7 +42,9 @@
         var clusterGroup = L.markerClusterGroup({
             // attribution in geojsonLayer is ignored
             attribution: signAttribution,
-            disableClusteringAtZoom : 18
+            //disableClusteringAtZoom : 18,
+            maxClusterRadius: radius,
+            spiderfyOnMaxZoom: true
         });
         var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.json");
         mymap.addLayer(clusterGroup);
@@ -61,6 +69,7 @@
             }
             return s;
         }
+
         function onMapClick(e) {
             prop = e.layer.feature.properties;
             console.log(prop);
