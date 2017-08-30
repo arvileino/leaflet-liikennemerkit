@@ -3,7 +3,16 @@
 
 <head>
     <meta charset="UTF-8">
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <!-- external json without ajax/jquery -->
+    <script>
+        var signMapping;
+        function liikennemerkitCallback (json) {
+            signMapping = json;
+        }
+    </script>
+    <script src="https://cdn.rawgit.com/jikuja/liikennemerkkinumerot/master/merkit_map.js"></script>
+
+    <!-- leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css">
@@ -23,7 +32,6 @@
             '<a href="https://creativecommons.org/licences/by/4.0/deed.fi">CC-BY</a>';
 
         var mymap = L.map('mapid').setView([60.440963, 22.25122], 10);
-        var signMapping;
 
         var radius = function(zoom) {
             if (zoom >= 18)
@@ -52,11 +60,6 @@
         geojsonLayer.on("data:loaded", function () {
             // add geojson layer into cluster layer after data is loaded
             clusterGroup.addLayer(geojsonLayer);
-        });
-
-        // load mapping
-        $.getJSON("https://cdn.rawgit.com/jikuja/liikennemerkkinumerot/master/merkit_map.json", function (json) {
-            signMapping = json;
         });
 
         var popup = L.popup();
