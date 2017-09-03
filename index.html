@@ -3,12 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- external json without ajax/jquery -->
+    <!-- external data with jsonp -->
     <script>
         var signMapping;
         function liikennemerkitCallback (json) {
             signMapping = json;
         }
+
     </script>
     <script src="https://cdn.rawgit.com/jikuja/liikennemerkkinumerot/master/merkit_map.js"></script>
 
@@ -17,8 +18,13 @@
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.1.0/dist/MarkerCluster.Default.css">
+
+    <!-- leaflet plugins -->
     <script src="https://unpkg.com/leaflet.markercluster@1.1.0/dist/leaflet.markercluster.js"></script>
     <script src="https://unpkg.com/leaflet-ajax@2.1.0/dist/leaflet.ajax.min.js"></script>
+    <script src="https://use.fontawesome.com/1cd05babcb.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.css"/>
+    <script src="https://unpkg.com/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.min.js"></script>
     <title>Title</title>
 </head>
 
@@ -31,14 +37,22 @@
             'Sign data &copy; <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">Turun kaupunki</a>, ' +
             '<a href="https://creativecommons.org/licences/by/4.0/deed.fi">CC-BY</a>';
 
+        // TODO: fix ... when opening patricular marker with ID
         var mymap = L.map('mapid').setView([60.440963, 22.25122], 10);
+        var popup = L.popup();
+        var magicNumber = 54;
 
-        var radius = function(zoom) {
+        var radius = function(zoom) { // spiderify/cluster only overlapping mark when zoom >= 18
             if (zoom >= 18)
                 return 5;
             return 80;
         };
 
+        mymap.on("zoomend", function (e) {
+            console.log("Zoom level: %s", e.target._zoom);
+        });
+
+        // create map
         L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution:
@@ -47,6 +61,7 @@
             id: 'mapbox.streets'
         }).addTo(mymap);
 
+        // add cluster layer
         var clusterGroup = L.markerClusterGroup({
             // attribution in geojsonLayer is ignored
             attribution: signAttribution,
@@ -54,15 +69,18 @@
             maxClusterRadius: radius,
             spiderfyOnMaxZoom: true
         });
-        var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.json");
         mymap.addLayer(clusterGroup);
 
+        // load geojson data into
+        var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.json");
+        geojsonLayer.on("click", onMarkerClick);
         geojsonLayer.on("data:loaded", function () {
             // add geojson layer into cluster layer after data is loaded
             clusterGroup.addLayer(geojsonLayer);
+            // after data is loaded we can zoom in to particular sign if given as argument
+            scrollToSign();
         });
 
-        var popup = L.popup();
         function fix(s) {
             var ret = s.match(/(\d+)([a-zöäå]+)/);
             if (ret) {
@@ -72,15 +90,46 @@
             }
             return s;
         }
+        var argMarker;
 
-        function onMapClick(e) {
-            prop = e.layer.feature.properties;
+        function scrollToSign() {
+            var searchParams = new URL(window.location.href).searchParams;
+            // current data does not contain unique ID
+            // use geojsonLayer._layers keys as workaround
+            if (searchParams && searchParams.has("aid")) {
+                var num = parseInt(searchParams.get("aid"));
+                if (isNaN(num)) {
+                    console.log("Failed to parse input: %s", searchParams.get("aid"));
+                    return;
+                }
+                console.log("zooming to %sth marker", num);
+                argMarker = geojsonLayer._layers[magicNumber + num];
+                console.log("marker: ", argMarker);
+                mymap.flyTo(argMarker._latlng, 19);
+                argMarker.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}));
+
+                // let map zoom and then change icons & try to open spiderified marker
+                mymap.on("zoomend", zoomEnd);
+            }
+        }
+
+        var zoomEnd = function () {
+            var visible = clusterGroup.getVisibleParent(argMarker);
+            console.log("visible: ", visible);
+            if (visible) {
+                visible.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}))
+            }
+            mymap.off("zoomend", zoomEnd);
+        };
+
+        function onMarkerClick(e) {
+            var prop = e.layer.feature.properties;
             console.log(prop);
             popup.setLatLng(e.latlng)
                 .setContent(signMapping[fix(prop["signtype"])])
                 .openOn(mymap);
         }
-        geojsonLayer.on("click", onMapClick)
+
     </script>
 </body>
 
