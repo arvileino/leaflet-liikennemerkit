@@ -105,29 +105,26 @@
                 console.log("zooming to %sth marker", num);
                 argMarker = geojsonLayer._layers[magicNumber + num];
                 console.log("marker: ", argMarker);
-                mymap.flyTo(argMarker._latlng, 19);
+                clusterGroup.zoomToShowLayer(argMarker, function () {
+                    popupHelper(argMarker.feature.properties, argMarker.getLatLng());
+                });
                 argMarker.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}));
-
-                // let map zoom and then change icons & try to open spiderified marker
-                mymap.on("zoomend", zoomEnd);
             }
         }
 
-        var zoomEnd = function () {
-            var visible = clusterGroup.getVisibleParent(argMarker);
-            console.log("visible: ", visible);
-            if (visible) {
-                visible.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}))
-            }
-            mymap.off("zoomend", zoomEnd);
-        };
+        function popupHelper(prop, latlong) {
+            console.log(prop);
+            var text = signMapping[fix(prop["signtype"])];
+            if (!text)
+                text = "Tunnistamaton";
+            popup.setLatLng(latlong)
+                .setContent(text)
+                .openOn(mymap);
+        }
 
         function onMarkerClick(e) {
             var prop = e.layer.feature.properties;
-            console.log(prop);
-            popup.setLatLng(e.latlng)
-                .setContent(signMapping[fix(prop["signtype"])])
-                .openOn(mymap);
+            popupHelper(prop, e.latlng);
         }
 
     </script>
