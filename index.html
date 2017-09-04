@@ -80,7 +80,7 @@
         mymap.addLayer(clusterGroup);
 
         // load geojson data into
-        var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.json");
+        var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.geojson");
         geojsonLayer.on("click", onMarkerClick);
         geojsonLayer.on("data:loaded", function () {
             // add geojson layer into cluster layer after data is loaded
