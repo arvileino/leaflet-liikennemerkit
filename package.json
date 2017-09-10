@@ -1,0 +1,16 @@
+{
+  "name": "leaflet-liikennemerkit",
+  "license" : "BSD-3-Clause",
+  "devDependencies": {
+    "standard": "*",
+    "eslint-plugin-html": "*"
+  },
+  "standard": {
+    "globals": ["L", "signMapping", "URL"],
+    "plugins": "html",
+    "filename": "index.html"
+  },
+  "scripts": {
+    "test": "standard index.html"
+  }
+}

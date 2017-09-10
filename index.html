@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <!-- external data with jsonp -->
     <script>
-        var signMapping;
-        function liikennemerkitCallback (json) {
-            signMapping = json;
-        }
+      var signMapping // eslint-disable-line no-unused-vars
 
+      function liikennemerkitCallback (json) { // eslint-disable-line no-unused-vars
+        signMapping = json
+      }
     </script>
     <script src="https://cdn.rawgit.com/jikuja/liikennemerkkinumerot/master/merkit_map.js"></script>
 
@@ -29,113 +29,117 @@
 </head>
 
 <body>
-    <!-- github fork ribbon -->
-    <a href="https://github.com/jikuja/leaflet-liikennemerkit"><img style="position: absolute; top: 0; right: 0; border: 0;z-index: 9999;" src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
-    <div id="mapid" style="height: 600px;"></div>
+<!-- github fork ribbon -->
+<a href="https://github.com/jikuja/leaflet-liikennemerkit"><img
+        style="position: absolute; top: 0; right: 0; border: 0;z-index: 9999;"
+        src="https://camo.githubusercontent.com/e7bbb0521b397edbd5fe43e7f760759336b5e05f/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677265656e5f3030373230302e706e67"
+        alt="Fork me on GitHub"
+        data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png"></a>
+<div id="mapid" style="height: 600px;"></div>
 
-    <script>
-        var signAttribution =
-            'Sign data &copy; <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">Turun kaupunki</a>, ' +
-            '<a href="https://creativecommons.org/licences/by/4.0/deed.fi">CC-BY</a>';
+<script>
+  var signAttribution =
+    'Sign data &copy; <a href="http://www.lounaistieto.fi/blog/2016/03/30/turun-kaupungin-liikennemerkit/">Turun kaupunki</a>, ' +
+    '<a href="https://creativecommons.org/licences/by/4.0/deed.fi">CC-BY</a>'
 
-        var mymap = L.map('mapid', {
-            maxZoom: 19
-        }).setView([60.440963, 22.25122], 10);
-        var popup = L.popup();
-        var searchParams = new URL(window.location.href).searchParams;
-        var argMarker;
+  var mymap = L.map('mapid', {
+    maxZoom: 19
+  }).setView([60.440963, 22.25122], 10)
+  var popup = L.popup()
+  var searchParams = new URL(window.location.href).searchParams
+  var argMarker
 
-        var radius = function(zoom) { // spiderify/clusterify only overlapping markers when zoom >= 18
-            if (zoom >= 18)
-                return 5;
-            return 80;
-        };
+  var radius = function (zoom) { // spiderify/clusterify only overlapping markers when zoom >= 18
+    if (zoom >= 18) {
+      return 5
+    }
+    return 80
+  }
 
-        <!-- log zoom level changes -->
-        mymap.on("zoomend", function (e) {
-            console.log("Zoom level: %s", e.target._zoom);
-        });
+  // log zoom level changes
+  mymap.on('zoomend', function (e) {
+    console.log('Zoom level: %s', e.target._zoom)
+  })
 
-        // create map layer
-        var osmLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution:
-                'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
-                '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
-            id: 'mapbox.streets'
-        });
+  // create map layer
+  var osmLayer = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution:
+    'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+    '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+    id: 'mapbox.streets'
+  })
 
-        // make layer visible asap if no particular marker requested
-        if (!searchParams.has("fid")) {
-            osmLayer.addTo(mymap);
-        }
+  // make layer visible asap if no particular marker requested
+  if (!searchParams.has('fid')) {
+    osmLayer.addTo(mymap)
+  }
 
-        // add cluster layer
-        var clusterGroup = L.markerClusterGroup({
-            // attribution in geojsonLayer is ignored => do it here
-            attribution: signAttribution,
-            maxClusterRadius: radius,
-            spiderfyOnMaxZoom: true
-        });
-        mymap.addLayer(clusterGroup);
+  // add cluster layer
+  var clusterGroup = L.markerClusterGroup({
+    // attribution in geojsonLayer is ignored => do it here
+    attribution: signAttribution,
+    maxClusterRadius: radius,
+    spiderfyOnMaxZoom: true
+  })
+  mymap.addLayer(clusterGroup)
 
-        // load geojson data into
-        var geojsonLayer = new L.GeoJSON.AJAX("liikennemerkit.geojson");
-        geojsonLayer.on("click", onMarkerClick);
-        geojsonLayer.on("data:loaded", function () {
-            // add geojson layer into cluster layer after data is loaded
-            clusterGroup.addLayer(geojsonLayer);
-            scrollToSign();
-        });
+  // load geojson data into
+  var geojsonLayer = new L.GeoJSON.AJAX('liikennemerkit.geojson')
+  geojsonLayer.on('click', onMarkerClick)
+  geojsonLayer.on('data:loaded', function () {
+    // add geojson layer into cluster layer after data is loaded
+    clusterGroup.addLayer(geojsonLayer)
+    scrollToSign()
+  })
 
-        function findMarkerFromGeoJSON(num) {
-            return Object.values(geojsonLayer._layers).find(function (feature) {
-                return feature.feature.properties.fid_ === num;
+  function findMarkerFromGeoJSON (num) {
+    return Object.values(geojsonLayer._layers).find(function (feature) {
+      return feature.feature.properties.fid_ === num
+    })
+  }
 
-            })
-        }
+  function scrollToSign () {
+    // pan, zoom, spiderify and open popup if marked id is given
+    if (searchParams && searchParams.has('fid')) {
+      var num = searchParams.get('fid')
+      console.log('zooming to fid_ %s', num)
+      argMarker = findMarkerFromGeoJSON(num)
+      console.log('found marker: ', argMarker)
+      clusterGroup.zoomToShowLayer(argMarker, function () {
+        osmLayer.addTo(mymap)
+        popupHelper(argMarker.feature.properties, argMarker.getLatLng())
+      })
+      argMarker.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}))
+    }
+  }
 
-        function scrollToSign() {
-            // pan, zoom, spiderify and open popup if marked id is given
-            if (searchParams && searchParams.has("fid")) {
-                var num = searchParams.get("fid");
-                console.log("zooming to fid_ %s", num);
-                argMarker = findMarkerFromGeoJSON(num);
-                console.log("found marker: ", argMarker);
-                clusterGroup.zoomToShowLayer(argMarker, function () {
-                    osmLayer.addTo(mymap);
-                    popupHelper(argMarker.feature.properties, argMarker.getLatLng());
-                });
-                argMarker.setIcon(L.AwesomeMarkers.icon({icon: 'exclamation-circle', markerColor: 'blue', prefix: 'fa'}));
-            }
-        }
+  function popupHelper (prop, latlong) {
+    console.log(prop)
+    var text = signMapping[fix(prop['signtype'])]
+    if (!text) {
+      text = 'Tunnistamaton'
+    }
+    popup.setLatLng(latlong)
+      .setContent(text)
+      .openOn(mymap)
+  }
 
-        function popupHelper(prop, latlong) {
-            console.log(prop);
-            var text = signMapping[fix(prop["signtype"])];
-            if (!text)
-                text = "Tunnistamaton";
-            popup.setLatLng(latlong)
-                .setContent(text)
-                .openOn(mymap);
-        }
+  function onMarkerClick (e) {
+    var prop = e.layer.feature.properties
+    popupHelper(prop, e.latlng)
+  }
 
-        function onMarkerClick(e) {
-            var prop = e.layer.feature.properties;
-            popupHelper(prop, e.latlng);
-        }
-
-        function fix(s) {
-            var ret = s.match(/(\d+)([a-zöäå]+)/);
-            if (ret) {
-                var value = ret[1] + " " + ret[2];
-                console.log("Fixed %s to %s", s, value)
-                return value;
-            }
-            return s;
-        }
-
-    </script>
+  function fix (s) {
+    var ret = s.match(/(\d+)([a-zöäå]+)/)
+    if (ret) {
+      var value = ret[1] + ' ' + ret[2]
+      console.log('Fixed %s to %s', s, value)
+      return value
+    }
+    return s
+  }
+</script>
 </body>
 
 </html>
