@@ -11,6 +11,7 @@
         signMapping = json
       }
     </script>
+    <!-- new version is pulled from master to CDN once per 24 hour -->
     <script src="https://cdn.rawgit.com/jikuja/liikennemerkkinumerot/master/merkit_map.js"></script>
 
     <!-- leaflet -->
@@ -115,8 +116,10 @@
   }
 
   function popupHelper (prop, latlong) {
+    var type = prop['signtype']
+    var text = signMapping[type]
     console.log(prop)
-    var text = signMapping[fix(prop['signtype'])]
+    // TODO: fix 361_40 etc. See bot code for ref
     if (!text) {
       text = 'Tunnistamaton'
     }
@@ -128,16 +131,6 @@
   function onMarkerClick (e) {
     var prop = e.layer.feature.properties
     popupHelper(prop, e.latlng)
-  }
-
-  function fix (s) {
-    var ret = s.match(/(\d+)([a-zöäå]+)/)
-    if (ret) {
-      var value = ret[1] + ' ' + ret[2]
-      console.log('Fixed %s to %s', s, value)
-      return value
-    }
-    return s
   }
 </script>
 </body>
