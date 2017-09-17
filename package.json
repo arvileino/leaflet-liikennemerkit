@@ -1,6 +1,6 @@
 {
   "name": "leaflet-liikennemerkit",
-  "license" : "BSD-3-Clause",
+  "license" : "MIT",
   "devDependencies": {
     "standard": "*",
     "eslint-plugin-html": "*"
